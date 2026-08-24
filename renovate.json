@@ -3,6 +3,7 @@
   "extends": ["config:recommended", ":dependencyDashboard"],
   "labels": ["dependencies"],
   "schedule": ["before 6am on monday"],
+  "ignorePaths": ["testdata/**"],
   "packageRules": [
     {
       "description": "Group non-breaking Go module updates into one PR",
