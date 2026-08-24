@@ -1,0 +1,8 @@
+name: main
+on: [push]
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - run: tofu plan
+      - run: tofu apply -auto-approve

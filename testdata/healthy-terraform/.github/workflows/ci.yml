@@ -1,0 +1,10 @@
+name: ci
+on: [push]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      TF_IN_AUTOMATION: true
+      TF_INPUT: false
+    steps:
+      - run: terraform plan -input=false
