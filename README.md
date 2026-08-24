@@ -1,5 +1,15 @@
 # tfdoctor
 
+> [!NOTE]
+> **macOS users:** tfdoctor is not signed with an Apple Developer certificate
+> and therefore not notarized. The Homebrew cask removes the quarantine flag
+> automatically, but if you download a binary manually, macOS Gatekeeper may
+> block it on first run. Unblock it with:
+>
+> ```bash
+> xattr -dr com.apple.quarantine ./tfdoctor
+> ```
+
 **tfdoctor** inspects a Terraform or OpenTofu repository and answers one question:
 
 > Is this Infrastructure-as-Code repository itself engineered well?
