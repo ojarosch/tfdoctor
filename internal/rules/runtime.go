@@ -8,15 +8,28 @@ import (
 
 func ruleRuntimeDetect(ctx *analyze.Context) []analyze.Result {
 	r := ctx.Repo
-	var tf, tofu bool
+
+	// Explicit version pins are authoritative over heuristic .tf/CI signals.
+	var pinTF, pinTofu bool
 	for _, p := range r.Pins {
-		if p.Tool == "terraform" {
-			tf = true
-		}
-		if p.Tool == "tofu" {
-			tofu = true
+		switch p.Tool {
+		case "terraform":
+			pinTF = true
+		case "tofu":
+			pinTofu = true
 		}
 	}
+	switch {
+	case pinTF && pinTofu:
+		return []analyze.Result{info("Ambiguous runtime", "Both terraform and tofu version pins found")}
+	case pinTofu:
+		return []analyze.Result{info("OpenTofu detected", "")}
+	case pinTF:
+		return []analyze.Result{info("Terraform detected", "")}
+	}
+
+	// No pins: fall back to signal-based detection.
+	var tf, tofu bool
 	ci := analyze.SummarizeCI(r.CIFiles)
 	if !tf {
 		for _, f := range r.TFFiles {

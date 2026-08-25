@@ -72,6 +72,40 @@ func TestHealthyTerraformBackendAndCI(t *testing.T) {
 	}
 }
 
+func TestRuleRuntimeDetectPins(t *testing.T) {
+	providerTF := &analyze.TFFile{Path: "main.tf", Providers: []analyze.ProviderRef{{Name: "aws"}}}
+	cases := []struct {
+		name string
+		repo *analyze.Repo
+		want string
+	}{
+		{"tofu pin beats terraform signals", &analyze.Repo{
+			Pins:    []analyze.PinInfo{{Tool: "tofu", Version: "1.8.0"}},
+			TFFiles: []*analyze.TFFile{providerTF},
+		}, "OpenTofu detected"},
+		{"terraform pin only", &analyze.Repo{
+			Pins:    []analyze.PinInfo{{Tool: "terraform", Version: "1.9.0"}},
+			TFFiles: []*analyze.TFFile{providerTF},
+		}, "Terraform detected"},
+		{"both pins ambiguous", &analyze.Repo{
+			Pins: []analyze.PinInfo{
+				{Tool: "tofu", Version: "1.8.0"},
+				{Tool: "terraform", Version: "1.9.0"},
+			},
+			TFFiles: []*analyze.TFFile{providerTF},
+		}, "Ambiguous runtime"},
+		{"no pins falls back to signals", &analyze.Repo{
+			TFFiles: []*analyze.TFFile{providerTF},
+		}, "Terraform detected"},
+	}
+	for _, tc := range cases {
+		res := ruleRuntimeDetect(&analyze.Context{Repo: tc.repo})
+		if len(res) != 1 || res[0].Title != tc.want {
+			t.Errorf("%s: got %+v, want %q", tc.name, res, tc.want)
+		}
+	}
+}
+
 func TestMissingLockfile(t *testing.T) {
 	res := analyzeFixture(t, "missing-lockfile")
 	assertStatus(t, res, "providers.lockfile-present", analyze.Warn)
