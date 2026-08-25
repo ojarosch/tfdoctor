@@ -72,6 +72,7 @@ func parseTF(rootDir, rel string) (*TFFile, error) {
 	if err != nil {
 		return nil, err
 	}
+	f.Raw = string(src)
 	body, diags := parseHCL(src, rel)
 	_ = diags // tolerate partial parses; extract whatever is valid
 	if body == nil {

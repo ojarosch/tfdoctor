@@ -200,6 +200,28 @@ permissions degrade to warnings, never failures.
 | `backend.s3-tls-only`          | warn     | Bucket policy denies requests without TLS          |
 | `backend.s3-inspect`           | info/warn| Emitted when the bucket cannot be inspected        |
 
+### IAM
+
+Scans `.tf` files for IAM trust policies federated against
+`token.actions.githubusercontent.com` (GitHub OIDC). GitHub now embeds owner/repo
+IDs in the subject (`repo:owner@12345/repo@67890:environment:prod`), so policies
+matching only the legacy `repo:owner/repo:...` format silently stop authorizing.
+
+| Rule ID                          | Severity | Check                                                     |
+|----------------------------------|----------|-----------------------------------------------------------|
+| `iam.github-oidc-legacy-subject` | warn     | `:sub` conditions use only legacy subjects without wildcards |
+
+Remediation: add ID-embedded subject variants alongside the legacy ones, or
+switch the condition to `StringLike` with a wildcard. To find out the real
+subject GitHub mints for you, inspect CloudTrail:
+
+```bash
+aws cloudtrail lookup-events \
+  --lookup-attributes AttributeKey=EventName,AttributeValue=AssumeRoleWithWebIdentity
+```
+
+The `Username` field of a denied call shows the exact subject string.
+
 ### CI
 
 Supports `.github/workflows/*.yml|.yaml` and `.gitlab-ci.yml`.

@@ -78,6 +78,7 @@ type Backend struct {
 // TFFile is one parsed .tf file.
 type TFFile struct {
 	Path                string // repo-relative, slash-separated
+	Raw                 string // full file content, for text-level rules
 	RequiredVersion     string
 	RequiredVersionLine int
 	Providers           []ProviderRef

@@ -33,6 +33,7 @@ func All() []Rule {
 		{ID: "repository.state-file-present", Category: "Repository", Fn: ruleStatePresent},
 		{ID: "repository.tfvars-sensitive-files", Category: "Repository", Fn: ruleTfvars},
 		{ID: "backend.detect", Category: "Backend", Fn: ruleBackendDetect},
+		{ID: "iam.github-oidc-legacy-subject", Category: "IAM", Fn: ruleGitHubOIDC},
 		{ID: "ci.input-disabled", Category: "CI", Fn: ruleInputDisabled},
 		{ID: "ci.automation-env", Category: "CI", Fn: ruleAutomationEnv},
 		{ID: "ci.apply-auto-approve", Category: "CI", Fn: ruleAutoApprove},

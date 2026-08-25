@@ -68,6 +68,12 @@ func Check(ctx context.Context, repo *analyze.Repo) []analyze.Result {
 		"public access block"))
 
 	pol, err := client.GetBucketPolicy(ctx, &s3.GetBucketPolicyInput{Bucket: bucket})
+	// ponytail: string match instead of typed error; the SDK exposes no
+	// NoSuchBucketPolicy type for GetBucketPolicy.
+	if err != nil && strings.Contains(err.Error(), "NoSuchBucketPolicy") {
+		err = nil // no policy attached is a valid answer for tlsOnlyResult
+		pol = &s3.GetBucketPolicyOutput{}
+	}
 	out = append(out, checkResult("backend.s3-tls-only", err,
 		func() analyze.Result { return tlsOnlyResult(pol) },
 		"bucket policy"))

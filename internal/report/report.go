@@ -10,7 +10,7 @@ import (
 	"github.com/ojarosch/tfdoctor/internal/analyze"
 )
 
-var categoryOrder = []string{"Runtime", "Providers", "Modules", "Repository", "Backend", "CI"}
+var categoryOrder = []string{"Runtime", "Providers", "Modules", "Repository", "Backend", "IAM", "CI"}
 
 // JSON writes the machine-readable report.
 func JSON(w io.Writer, version, path string, results []analyze.Result) error {

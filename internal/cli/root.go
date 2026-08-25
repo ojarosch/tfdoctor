@@ -61,6 +61,7 @@ func newRootCmd() *cobra.Command {
 			return nil
 		},
 	}
+	cmd.SetVersionTemplate("tfdoctor {{.Version}}\n")
 	cmd.Flags().StringVar(&format, "format", "text", "output format (text, json)")
 	cmd.Flags().BoolVar(&checkS3, "check-s3-backend", false,
 		"inspect the S3 state bucket (versioning, encryption, public access, TLS policy)")
