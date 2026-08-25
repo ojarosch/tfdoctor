@@ -57,11 +57,14 @@ func parseTerraformBlock(body *hclsyntax.Body, f *TFFile) {
 		switch block.Type {
 		case "backend":
 			if len(block.Labels) > 0 {
-				f.Backends = append(f.Backends, Backend{
+				b := Backend{
 					Type: block.Labels[0],
 					File: f.Path,
 					Line: block.DefRange().Start.Line,
-				})
+				}
+				b.Bucket, _, _ = attrString(block.Body, "bucket")
+				b.Region, _, _ = attrString(block.Body, "region")
+				f.Backends = append(f.Backends, b)
 			}
 		case "required_providers":
 			for name, attr := range block.Body.Attributes {

@@ -7,12 +7,13 @@ import (
 	"github.com/ojarosch/tfdoctor/internal/analyze"
 	"github.com/ojarosch/tfdoctor/internal/report"
 	"github.com/ojarosch/tfdoctor/internal/rules"
+	"github.com/ojarosch/tfdoctor/internal/s3check"
 	"github.com/spf13/cobra"
 )
 
 // Version is the tfdoctor version reported by --version and embedded in
 // JSON output.
-var Version = "0.1.0"
+var Version = "0.1.2"
 
 type exitError struct{ code int }
 
@@ -20,6 +21,7 @@ func (e *exitError) Error() string { return fmt.Sprintf("exit %d", e.code) }
 
 func newRootCmd() *cobra.Command {
 	var format string
+	var checkS3 bool
 	cmd := &cobra.Command{
 		Use:           "tfdoctor [path]",
 		Short:         "Check the engineering hygiene of a Terraform/OpenTofu repository",
@@ -41,6 +43,9 @@ func newRootCmd() *cobra.Command {
 				return &exitError{code: 2}
 			}
 			results := rules.RunAll(&analyze.Context{Repo: repo})
+			if checkS3 {
+				results = append(results, s3check.Check(cmd.Context(), repo)...)
+			}
 			if format == "json" {
 				if err := report.JSON(cmd.OutOrStdout(), Version, repo.Path, results); err != nil {
 					return &exitError{code: 2}
@@ -57,6 +62,8 @@ func newRootCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVar(&format, "format", "text", "output format (text, json)")
+	cmd.Flags().BoolVar(&checkS3, "check-s3-backend", false,
+		"inspect the S3 state bucket (versioning, encryption, public access, TLS policy)")
 	return cmd
 }
 

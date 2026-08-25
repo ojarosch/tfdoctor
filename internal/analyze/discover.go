@@ -68,9 +68,11 @@ type ModuleRef struct {
 
 // Backend is a configured state backend.
 type Backend struct {
-	Type string
-	File string
-	Line int
+	Type   string
+	Bucket string // literal bucket attr (s3), empty when dynamic
+	Region string // literal region attr (s3)
+	File   string
+	Line   int
 }
 
 // TFFile is one parsed .tf file.
@@ -109,7 +111,7 @@ type Repo struct {
 	Rel           string // as given on the command line
 	TFFiles       []*TFFile
 	Pins          []PinInfo
-	Gitignore     []string // non-comment .gitignore lines (root only)
+	Gitignore     []string // non-comment lines from repo-root and scan-root .gitignore
 	GitAvailable  bool
 	Tracked       map[string]bool
 	Lockfile      string // repo-relative path if .terraform.lock.hcl exists
@@ -155,6 +157,9 @@ func Discover(path string) (*Repo, error) {
 		return nil, err
 	}
 	repo := &Repo{Path: abs, Rel: filepath.Clean(path)}
+	if gr := findGitRoot(abs); gr != "" && gr != abs {
+		readLines(filepath.Join(gr, ".gitignore"), &repo.Gitignore)
+	}
 
 	var tfPaths []string
 	err = filepath.WalkDir(abs, func(p string, d fs.DirEntry, err error) error {
@@ -206,6 +211,21 @@ func Discover(path string) (*Repo, error) {
 
 	repo.CIFiles = discoverCI(abs)
 	return repo, nil
+}
+
+// findGitRoot walks up from dir to the closest ancestor containing .git.
+// Returns "" when dir is not inside a git repository.
+func findGitRoot(dir string) string {
+	for {
+		if _, err := os.Stat(filepath.Join(dir, ".git")); err == nil {
+			return dir
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return ""
+		}
+		dir = parent
+	}
 }
 
 func readLines(p string, out *[]string) {

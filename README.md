@@ -87,6 +87,7 @@ cd tfdoctor && go build -o tfdoctor ./cmd/tfdoctor
 tfdoctor [path]            # analyze a repository (default: current directory)
 tfdoctor --format json     # machine-readable output
 tfdoctor --format text     # human-readable output (default)
+tfdoctor --check-s3-backend  # also inspect the live S3 state bucket (opt-in, needs AWS credentials)
 tfdoctor --version
 tfdoctor --help
 ```
@@ -185,6 +186,19 @@ can run tfdoctor.
 | Rule ID         | Severity | Check                                        |
 |-----------------|----------|----------------------------------------------|
 | `backend.detect`| info     | Reports configured backend type (local/default if none) |
+
+With `--check-s3-backend`, tfdoctor additionally queries the live S3 bucket from
+the `s3` backend block (uses the standard AWS credential chain; the backend's
+literal `region` attribute is honored). Unreachable buckets or missing
+permissions degrade to warnings, never failures.
+
+| Rule ID                        | Severity | Check                                              |
+|--------------------------------|----------|----------------------------------------------------|
+| `backend.s3-versioning`        | fail     | Bucket versioning is enabled                       |
+| `backend.s3-encryption`        | fail     | A default server-side encryption rule exists       |
+| `backend.s3-public-access-block` | fail   | All four Block Public Access settings are enabled  |
+| `backend.s3-tls-only`          | warn     | Bucket policy denies requests without TLS          |
+| `backend.s3-inspect`           | info/warn| Emitted when the bucket cannot be inspected        |
 
 ### CI
 

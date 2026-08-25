@@ -1,6 +1,10 @@
 package analyze
 
-import "testing"
+import (
+	"os"
+	"path/filepath"
+	"testing"
+)
 
 func TestIgnoreMatching(t *testing.T) {
 	ig := NewIgnore([]string{
@@ -34,6 +38,37 @@ func TestIgnoreMatching(t *testing.T) {
 		if got := ig.Matches(c.path); got != c.want {
 			t.Errorf("Matches(%q) = %v, want %v", c.path, got, c.want)
 		}
+	}
+}
+
+func TestDiscoverReadsRootGitignoreFromSubdir(t *testing.T) {
+	root := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(root, ".git"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, ".gitignore"),
+		[]byte(".terraform/\n*.tfstate\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	sub := filepath.Join(root, "terraform")
+	if err := os.MkdirAll(sub, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(sub, "main.tf"),
+		[]byte("terraform {}\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	repo, err := Discover(sub)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ig := NewIgnore(repo.Gitignore)
+	if !ig.Matches(".terraform") {
+		t.Errorf(".terraform not matched; gitignore = %v", repo.Gitignore)
+	}
+	if !ig.Matches("x.tfstate") {
+		t.Errorf("x.tfstate not matched; gitignore = %v", repo.Gitignore)
 	}
 }
 
