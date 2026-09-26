@@ -88,6 +88,6 @@ func Text(w io.Writer, results []analyze.Result, ignored int) {
 	_, _ = fmt.Fprintf(w, "\n%d passed\n%d warnings\n%d failures\n%d info\n",
 		counts[analyze.Pass], counts[analyze.Warn], counts[analyze.Fail], counts[analyze.Info])
 	if ignored > 0 {
-		_, _ = fmt.Fprintf(w, "%d ignored via %s\n", ignored, analyze.ConfigFile)
+		_, _ = fmt.Fprintf(w, "%d ignored via .tfdoctor.yaml\n", ignored)
 	}
 }
