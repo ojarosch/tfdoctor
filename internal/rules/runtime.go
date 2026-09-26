@@ -78,7 +78,7 @@ func ruleVersionPinned(ctx *analyze.Context) []analyze.Result {
 		return []analyze.Result{pass("Runtime version pinned", strings.Join(pinned, ", "))}
 	case len(nondeterministic) > 0:
 		res := warn("Runtime version pin is not deterministic",
-			strings.Join(nondeterministic, ", ") + " does not pin an exact version")
+			strings.Join(nondeterministic, ", ")+" does not pin an exact version")
 		return []analyze.Result{res}
 	default:
 		return []analyze.Result{warn("No runtime version pin",

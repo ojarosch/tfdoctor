@@ -108,17 +108,17 @@ type TextFile struct {
 
 // Repo is the discovered model of a repository.
 type Repo struct {
-	Path          string // absolute
-	Rel           string // as given on the command line
-	TFFiles       []*TFFile
-	Pins          []PinInfo
-	Gitignore     []string // non-comment lines from repo-root and scan-root .gitignore
-	GitAvailable  bool
-	Tracked       map[string]bool
-	Lockfile      string // repo-relative path if .terraform.lock.hcl exists
-	StateFiles    []FoundFile
-	TfvarsFiles   []FoundFile
-	CIFiles       []TextFile
+	Path         string // absolute
+	Rel          string // as given on the command line
+	TFFiles      []*TFFile
+	Pins         []PinInfo
+	Gitignore    []string // non-comment lines from repo-root and scan-root .gitignore
+	GitAvailable bool
+	Tracked      map[string]bool
+	Lockfile     string // repo-relative path if .terraform.lock.hcl exists
+	StateFiles   []FoundFile
+	TfvarsFiles  []FoundFile
+	CIFiles      []TextFile
 }
 
 func (r *Repo) hasTerraformSignal() bool {
