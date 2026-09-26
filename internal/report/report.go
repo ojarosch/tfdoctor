@@ -32,7 +32,7 @@ func JSON(w io.Writer, version, path string, results []analyze.Result) error {
 	if err != nil {
 		return err
 	}
-	_, err = _, _ = fmt.Fprintln(w, string(data))
+	_, err = fmt.Fprintln(w, string(data))
 	return err
 }
 
