@@ -12,8 +12,9 @@ import (
 
 var categoryOrder = []string{"Runtime", "Providers", "Modules", "Repository", "Backend", "IAM", "CI"}
 
-// JSON writes the machine-readable report.
-func JSON(w io.Writer, version, path string, results []analyze.Result) error {
+// JSON writes the machine-readable report. ignored is the number of results
+// filtered out via .tfdoctor.yaml.
+func JSON(w io.Writer, version, path string, results []analyze.Result, ignored int) error {
 	out := struct {
 		Version string           `json:"version"`
 		Path    string           `json:"path"`
@@ -24,6 +25,9 @@ func JSON(w io.Writer, version, path string, results []analyze.Result) error {
 	}}
 	for _, r := range results {
 		out.Summary[string(r.Status)]++
+	}
+	if ignored > 0 {
+		out.Summary["ignored"] = ignored
 	}
 	if out.Results == nil {
 		out.Results = []analyze.Result{}
@@ -36,8 +40,9 @@ func JSON(w io.Writer, version, path string, results []analyze.Result) error {
 	return err
 }
 
-// Text writes the human-readable report.
-func Text(w io.Writer, results []analyze.Result) {
+// Text writes the human-readable report. ignored is the number of results
+// filtered out via .tfdoctor.yaml.
+func Text(w io.Writer, results []analyze.Result, ignored int) {
 	fancy := isTerminal(w)
 	sym := map[analyze.Status]string{
 		analyze.Pass: "ok", analyze.Warn: "!!", analyze.Fail: "x", analyze.Info: "-",
@@ -58,20 +63,20 @@ func Text(w io.Writer, results []analyze.Result) {
 		if len(rs) == 0 {
 			continue
 		}
-		fmt.Fprintf(w, "\n%s\n", cat)
+		_, _ = fmt.Fprintf(w, "\n%s\n", cat)
 		for _, r := range rs {
 			line := fmt.Sprintf("%s %s", sym[r.Status], r.Title)
 			if r.Description != "" {
 				line += ": " + r.Description
 			}
-			fmt.Fprintln(w, line)
+			_, _ = fmt.Fprintln(w, line)
 		}
 		delete(byCat, cat)
 	}
 	for cat, rs := range byCat { // any future category not in the fixed order
-		fmt.Fprintf(w, "\n%s\n", cat)
+		_, _ = fmt.Fprintf(w, "\n%s\n", cat)
 		for _, r := range rs {
-			fmt.Fprintf(w, "%s %s\n", sym[r.Status], r.Title)
+			_, _ = fmt.Fprintf(w, "%s %s\n", sym[r.Status], r.Title)
 		}
 	}
 
@@ -79,7 +84,10 @@ func Text(w io.Writer, results []analyze.Result) {
 	for _, r := range results {
 		counts[r.Status]++
 	}
-	fmt.Fprintln(w, "\n"+strings.Repeat("─", 26))
-	fmt.Fprintf(w, "\n%d passed\n%d warnings\n%d failures\n%d info\n",
+	_, _ = fmt.Fprintln(w, "\n"+strings.Repeat("─", 26))
+	_, _ = fmt.Fprintf(w, "\n%d passed\n%d warnings\n%d failures\n%d info\n",
 		counts[analyze.Pass], counts[analyze.Warn], counts[analyze.Fail], counts[analyze.Info])
+	if ignored > 0 {
+		_, _ = fmt.Fprintf(w, "%d ignored via %s\n", ignored, analyze.ConfigFile)
+	}
 }

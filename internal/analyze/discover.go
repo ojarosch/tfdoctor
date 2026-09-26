@@ -121,29 +121,6 @@ type Repo struct {
 	CIFiles      []TextFile
 }
 
-func (r *Repo) hasTerraformSignal() bool {
-	for _, p := range r.Pins {
-		if p.Tool == "terraform" {
-			return true
-		}
-	}
-	for _, f := range r.TFFiles {
-		if f.RequiredVersion != "" || len(f.Backends) > 0 {
-			return true
-		}
-	}
-	return false
-}
-
-func (r *Repo) hasTofuSignal() bool {
-	for _, p := range r.Pins {
-		if p.Tool == "tofu" {
-			return true
-		}
-	}
-	return false
-}
-
 // Discover walks the repository at path and builds the Repo model.
 func Discover(path string) (*Repo, error) {
 	info, err := os.Stat(path)

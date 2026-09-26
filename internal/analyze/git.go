@@ -25,10 +25,3 @@ func lsFiles(dir string) (map[string]bool, bool) {
 	}
 	return tracked, true
 }
-
-func (r *Repo) isTracked(rel string) bool {
-	if !r.GitAvailable {
-		return false
-	}
-	return r.Tracked[rel]
-}
